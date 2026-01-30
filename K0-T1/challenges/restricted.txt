@@ -1,1 +1,2 @@
 This file is restricted. You may not write to it.
+But I have the permissions to append this line.
