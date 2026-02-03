@@ -46,8 +46,20 @@ public class Task implements Comparable<Task> {
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return String.format("ID: %d | %s [%s] | Prioridade: %s | Fim: %s | Cat: %s",
+        return String.format("ID: %d | %s [%s] | Prioridade: %s | Fim: %s | Categoria: %s",
                 id, status, name, priority.getNumber(), dateToEnd.format(formatter), category.getName());
+    }
+
+    public String toCSV() {
+        return String.format("%d,%s,%s,%s,%d,%d,%s",
+                id,
+                name,
+                description,
+                dateToEnd,
+                priority.getNumber(),
+                category.getId(),
+                status.name()
+        );
     }
 
     // Getters and Setters

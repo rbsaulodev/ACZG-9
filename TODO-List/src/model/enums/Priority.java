@@ -23,10 +23,10 @@ public enum Priority {
         return number;
     }
 
-    public static StatusTask fromCode(int code) {
-        for (StatusTask status : StatusTask.values()) {
-            if (status.getNumber() == code) {
-                return status;
+    public static Priority fromCode(int code) {
+        for (Priority priority : Priority.values()) {
+            if (priority.getNumber() == code) {
+                return priority;
             }
         }
         throw new IllegalArgumentException("Código de status inválido: " + code);
