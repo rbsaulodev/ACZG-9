@@ -6,10 +6,19 @@ public class CategoryTask {
     private String name;
     private String description;
 
-    public CategoryTask(Integer id, String name, String description) {
+    public CategoryTask(String name, String description) {
         this.id = ++idCounter;
         this.name = name;
         this.description = description;
+    }
+
+    public static CategoryTask createCategoryTask(String name, String description) {
+        return new CategoryTask(name, description);
+    }
+
+    public void updateData(String name, String description) {
+        if (name != null && !name.isBlank()) this.name = name;
+        if (description != null && !description.isBlank()) this.description = description;
     }
 
     @Override
@@ -20,10 +29,6 @@ public class CategoryTask {
     //Getters and Setters
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getName() {

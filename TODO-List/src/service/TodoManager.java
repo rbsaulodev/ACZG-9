@@ -60,4 +60,10 @@ public class TodoManager {
                 .filter(t -> t.getStatus() == StatusTask.DOING)
                 .forEach(System.out::println);
     }
+
+    public void listTaskByNumber(Integer number){
+        tasks.stream()
+                .filter(t -> t.getStatus() == StatusTask.fromCode(number))
+                .forEach(System.out::println);
+    }
 }
