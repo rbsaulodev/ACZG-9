@@ -2,10 +2,13 @@ package model;
 
 import model.enums.Priority;
 import model.enums.StatusTask;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class Task implements Comparable<Task> {
+    private static int idCounter = 0;
+    private final Integer id;
     private String name;
     private String description;
     private LocalDate dateToEnd;
@@ -13,13 +16,26 @@ public class Task implements Comparable<Task> {
     private CategoryTask category;
     private StatusTask status;
 
-    public Task(String name, String description, LocalDate dateToEnd, Priority priority, CategoryTask category, StatusTask status) {
+    private Task(String name, String description, LocalDate dateToEnd, Priority priority, CategoryTask category, StatusTask status) {
+        this.id = ++idCounter;
         this.name = name;
         this.description = description;
         this.dateToEnd = dateToEnd;
         this.priority = priority;
         this.category = category;
         this.status = status;
+    }
+
+    public static Task createTask(String name, String description, LocalDate dateToEnd, Priority priority, CategoryTask category) {
+        return new Task(name, description, dateToEnd, priority, category, StatusTask.TODO);
+    }
+
+    public void updateData(String name, String description, LocalDate dateToEnd, Priority priority, StatusTask status) {
+        if (name != null && !name.isBlank()) this.name = name;
+        if (description != null && !description.isBlank()) this.description = description;
+        if (dateToEnd != null) this.dateToEnd = dateToEnd;
+        if (priority != null) this.priority = priority;
+        if (status != null) this.status = status;
     }
 
     @Override
@@ -30,8 +46,8 @@ public class Task implements Comparable<Task> {
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return String.format("%s [%s] | Prioridade: %d | Fim: %s | Cat: %s\n   Obs: %s",
-                status, name, priority.getNumber(), dateToEnd.format(formatter), category.getName(), description);
+        return String.format("ID: %d | %s [%s] | Prioridade: %s | Fim: %s | Cat: %s",
+                id, status, name, priority.getNumber(), dateToEnd.format(formatter), category.getName());
     }
 
     // Getters and Setters
@@ -81,5 +97,9 @@ public class Task implements Comparable<Task> {
 
     public void setStatus(StatusTask status) {
         this.status = status;
+    }
+
+    public Integer getId() {
+        return id;
     }
 }

@@ -1,12 +1,13 @@
 package model;
 
 public class CategoryTask {
+    private static int idCounter = 0;
     private Integer id;
     private String name;
     private String description;
 
     public CategoryTask(Integer id, String name, String description) {
-        this.id = id;
+        this.id = ++idCounter;
         this.name = name;
         this.description = description;
     }
