@@ -7,6 +7,7 @@ import model.enums.StatusTask;
 
 import java.io.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,68 +20,75 @@ public class TodoManager {
         tasks.add(task);
         Collections.sort(tasks);
     }
+    public void checkAlarms() {
+        System.out.println("\n🔔 VERIFICANDO ALARMES ATIVOS...");
+        boolean hasAlarms = false;
+        for (Task task : tasks) {
+            if (task.shouldTriggerAlarm()) {
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM HH:mm");
+                System.out.println("⚠️ ALERTA: '" + task.getName() + "' agendada para " + task.getDateToEnd().format(fmt));
+                hasAlarms = true;
+            }
+        }
+        if (!hasAlarms) System.out.println("Nenhum alarme disparado no momento.");
+    }
 
 
-    //Sistema de Memória
+    // Sistema de Memória
     private void saveAllDataCSV() {
         String filename = "src/data/tasks.csv";
         try (PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
-            pw.println("id,name,description,dateToEnd,priority,category,status");
+            pw.println("id,name,description,dateToEnd,priority,category,status,alarmEnabled,alarmHoursPrior");
             for (Task t : tasks) {
                 pw.println(t.toCSV());
             }
         } catch (IOException e) {
-            System.err.println("Erro ao salvar arquivo: " + e.getMessage());
+            System.err.println("Erro ao salvar: " + e.getMessage());
         }
     }
 
     public void loadTasksCSV(CategoryManager catManager) {
         String path = "src/data/tasks.csv";
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line;
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] d = line.split(",");
-                int catId = Integer.parseInt(d[5].trim());
-                CategoryTask cat = catManager.findById(catId);
-
+                CategoryTask cat = catManager.findById(Integer.parseInt(d[5].trim()));
                 if (cat != null) {
-                    Task task = Task.createTask(d[1], d[2], LocalDate.parse(d[3], fmt), Priority.fromCode(Integer.parseInt(d[4])), cat);
+                    Task task = Task.createTask(
+                            d[1], d[2],
+                            LocalDateTime.parse(d[3]),
+                            Priority.fromCode(Integer.parseInt(d[4])),
+                            cat,
+                            Boolean.parseBoolean(d[7]),
+                            Integer.parseInt(d[8])
+                    );
                     task.setStatus(StatusTask.valueOf(d[6].trim()));
                     this.tasks.add(task);
-                } else {
-                    System.out.println("⚠️ Alerta: Categoria ID " + catId + " não encontrada para a tarefa '" + d[1] + "'. Pulando...");
                 }
             }
             Collections.sort(tasks);
+            checkAlarms();
         } catch (IOException e) {
             System.out.println("Arquivo de tarefas não encontrado.");
         }
     }
 
     // CRUD
-    public void createTask(String name, String description, LocalDate dateToEnd, Priority priority, CategoryTask category) {
-        Task newTask = Task.createTask(name, description, dateToEnd, priority, category);
-        this.addTask(newTask);
+    public void createTask(String name, String description, LocalDateTime dateToEnd, Priority priority, CategoryTask category, boolean alarmOn, int hours) {
+        Task newTask = Task.createTask(name, description, dateToEnd, priority, category, alarmOn, hours);
+        tasks.add(newTask);
+        Collections.sort(tasks);
         saveAllDataCSV();
-        System.out.println("Nova tarefa criada com ID: " + newTask.getId());
+        System.out.println("Tarefa criada com sucesso!");
     }
 
-    public void updateTask(Integer id, String name, String description, LocalDate dateToEnd, Priority priority, StatusTask status) {
-        tasks.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst()
-                .ifPresentOrElse(
-                        task -> {
-                            task.updateData(name, description, dateToEnd, priority, status);
-                            Collections.sort(tasks);
-                            saveAllDataCSV();
-                            System.out.println("Tarefa atualizada!");
-                        },
-                        () -> System.out.println("ID não encontrado.")
-                );
+    public void updateTask(Integer id, String name, String description, LocalDateTime date, Priority prio, StatusTask status, Boolean alarm, Integer hours) {
+        tasks.stream().filter(t -> t.getId().equals(id)).findFirst().ifPresent(t -> {
+            t.updateData(name, description, date, prio, status, alarm, hours);
+            saveAllDataCSV();
+        });
     }
 
     public void removeTask(Integer id) {
